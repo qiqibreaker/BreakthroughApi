@@ -2,9 +2,8 @@
 cd "$(cd "$(dirname "$0")" && pwd)"
 project_name=$(basename "$(pwd)")
 
-vf_port=${vf_port:-9090}
 version=${vf_version:-latest}
-images=vue-fastapi-admin:latest
+images=breakthroughapi:latest
 
 # 打印带时间前缀的消息
 print_message() {
@@ -79,7 +78,7 @@ login() {
 # 构建镜像
 build() {
     print_message INFO "正在构建开发镜像..."
-    docker build --no-cache --network host . -t $images
+    docker build --network host . -t $images
     print_message INFO "镜像构建完成"
 }
 # 删除镜像
@@ -91,20 +90,13 @@ delete_img() {
 
 # 启动开发容器
 start() {
-    is_exist
-    if netstat -nutlp | grep ":${vf_port} "; then
-        print_message WARN "检测到 ${vf_port} 端口已被占用，你可以停止当前监听8080端口的进程或者代码根目录的 .env 文件中的端口配置参数" >&2
-        exit 1
-    fi
-    
     print_message INFO "正在启动开发容器..."
     docker run -dti \
-        --name="${project_name}" \
+        --name="breakthroughapi" \
         --restart=always \
-        -p ${vf_port}:80 \
-        -p 9999:8080 \
-        vue-fastapi-admin
-    show_logs "${project_name}"
+        -p 9999:9999 \
+        breakthroughapi:latest
+    show_logs "breakthroughapi"
 }
 
 # 重启开发容器
@@ -149,6 +141,9 @@ print_help() {
 
 # 处理命令
 case "$1" in
+    "build")
+        build
+        ;;
     "start")
         start
         ;;
